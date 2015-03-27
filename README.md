@@ -10,7 +10,7 @@
 </p>
 
 # 如何使用
-## 导入
+### 导入
 1. 可以单独将此项目作为库（isLibrary）或者直接将java src和res文件拷贝至项目中,在 AndroidManifest.xml 中配置
 
 ```
@@ -18,7 +18,7 @@
         <activity android:name="com.qiao.activity.ImageBrowserActivity"></activity>
 ```
 
-## 使用
+### 使用
 2. 使用指向ImageSelectorActivity的Intent ,传入参数为 SelectorParamContext
 
 ```
@@ -34,20 +34,27 @@
 ## 示例：
 
 ```
-Intent intent = new Intent(YourActivity , ImageSelectorActivity.class);
-SelectorParamContext params = new SelectorParamContext();
-params.setMult(true);
-params.setMaxCount(9);
-params.setHasQulityMenu(true);
-startActivityForResult(intent, requestCode);
+/**
+ *选图时调用
+ **/
+ public void startImageSelector(){
+	Intent intent = new Intent(YourActivity , ImageSelectorActivity.class);
+	SelectorParamContext params = new SelectorParamContext();
+	params.setMult(true);
+	params.setMaxCount(9);
+	params.setHasQulityMenu(true);
+	startActivityForResult(intent, requestCode);
+}
 
-//返回对象也为 SelectorParamContext
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+/**
+ *返回对象也为 SelectorParamContext
+ **/
+@Override
+protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-		if (resultCode == Activity.RESULT_OK) {
-			SelectorParamContext params = (SelectorParamContext)data.getSerializableExtra(SelectorParamContext.TAG_SELECTOR);
+	if (resultCode == Activity.RESULT_OK) {
+		SelectorParamContext params = (SelectorParamContext)data.getSerializableExtra(SelectorParamContext.TAG_SELECTOR);
 		//你的处理逻辑
-		}
 	}
+}
 ```
