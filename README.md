@@ -2,11 +2,11 @@
  本地选图控件,支持单选、多选和预览。注：实例中提供的图片质量（这里只提供选项，并没有实际压缩操作）
 
 <p>
-   <img src="https://raw.githubusercontent.com/Qiaoidea/ImageSelector/master/screenShot/device-1.png" width="3200" alt="Screenshot"/>
+   <img src="https://raw.githubusercontent.com/Qiaoidea/ImageSelector/master/screenShot/device-1.png" width="350" alt="Screenshot"/>
    &nbsp;&nbsp;
-   <img src="https://raw.githubusercontent.com/Qiaoidea/ImageSelector/master/screenShot/device-2.png" width="3200" alt="Screenshot"/>
+   <img src="https://raw.githubusercontent.com/Qiaoidea/ImageSelector/master/screenShot/device-2.png" width="350" alt="Screenshot"/>
    &nbsp;&nbsp;
-   <img src="https://raw.githubusercontent.com/Qiaoidea/ImageSelector/master/screenShot/device-3.png" width="320" alt="Screenshot"/>
+   <img src="https://raw.githubusercontent.com/Qiaoidea/ImageSelector/master/screenShot/device-3.png" width="350" alt="Screenshot"/>
 </p>
 
 # 如何使用
