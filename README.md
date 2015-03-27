@@ -1,5 +1,13 @@
 # ImageSelector
-本地选图控件,支持单选、多选和预览。图片质量（这里只提供选项，并没有压缩操作）
+ 本地选图控件,支持单选、多选和预览。注：实例中提供的图片质量（这里只提供选项，并没有实际压缩操作）
+
+<p>
+   <img src="https://raw.githubusercontent.com/Qiaoidea/ImageSelector/master/screenShot/device-1.png" width="480" alt="Screenshot"/>
+   &nbsp;&nbsp;
+   <img src="https://raw.githubusercontent.com/Qiaoidea/ImageSelector/master/screenShot/device-2.png" width="480" alt="Screenshot"/>
+   &nbsp;&nbsp;
+   <img src="https://raw.githubusercontent.com/Qiaoidea/ImageSelector/master/screenShot/device-3.png" width="480" alt="Screenshot"/>
+</p>
 
 ![选图界面](http://upload-images.jianshu.io/upload_images/125949-de049fa9435b3723.png)
 
