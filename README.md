@@ -10,7 +10,7 @@
 </p>
 
 # 如何使用
-- ##导入
+- ## 导入
 1. 可以单独将此项目作为库（isLibrary）或者直接将java src和res文件拷贝至项目中,在 AndroidManifest.xml 中配置
 
 ```
@@ -18,7 +18,7 @@
         <activity android:name="com.qiao.activity.ImageBrowserActivity"></activity>
 ```
 
-- ##使用
+- ## 使用
 2. 使用指向ImageSelectorActivity的Intent ,传入参数为 SelectorParamContext
 
 ```
