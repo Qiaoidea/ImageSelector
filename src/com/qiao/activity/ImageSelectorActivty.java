@@ -9,10 +9,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.qiao.adapter.BaseAdapter;
 import com.qiao.adapter.ImageCursorAdapter;
@@ -20,6 +20,7 @@ import com.qiao.bean.Bucket;
 import com.qiao.bean.SelectorParamContext;
 import com.qiao.imageselector.R;
 import com.qiao.util.AnimUtil;
+import com.qiao.util.ImageLoadUtil;
 import com.qiao.util.MediaHelper;
 import com.qiao.util.Util;
 import com.qiao.view.ActionSheet;
@@ -27,7 +28,7 @@ import com.qiao.view.ActionSheet.Action1;
 import com.qiao.view.BucketView;
 import com.qiao.view.CheckedImageView;
 
-public class ImageSelectorActivty extends Activity{
+public class ImageSelectorActivty extends Activity  implements AbsListView.OnScrollListener{
 	protected View backView; 
 	protected TextView titleView,bucketView,picQuality,browserView,okView;
 	/**
@@ -126,6 +127,7 @@ public class ImageSelectorActivty extends Activity{
 				onOKClick();
 			}
 		});
+		imageGridView.setOnScrollListener(this);
 	}
 
 	/**
@@ -157,6 +159,7 @@ public class ImageSelectorActivty extends Activity{
 	
 	private void bindImageGridView(Cursor cursor) {
 		if(imageAdapter != null){
+			isFirstEnter = true;
 			imageAdapter.changeCursor(cursor);
 		}else{
 			imageAdapter = new ImageCursorAdapter(ImageSelectorActivty.this,cursor,paramContext.getSelectedFile()){
@@ -304,4 +307,54 @@ public class ImageSelectorActivty extends Activity{
 			mCursor.close();
 		super.onDestroy();
 	}
+	
+	/**
+     * 第一张可见图片的下标
+     */
+    private int mFirstVisibleItem;
+
+    /**
+     * 一屏有多少张图片可见
+     */
+    private int mVisibleItemCount;
+
+    /**
+     * 记录是否刚打开程序，用于解决进入程序不滚动屏幕，不会下载图片的问题。
+     */
+    private boolean isFirstEnter = true;
+
+    @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
+        // 仅当GridView静止时才去下载图片，GridView滑动时取消所有正在下载的任务
+        if (scrollState == SCROLL_STATE_IDLE) {
+            loadImages(mFirstVisibleItem, mVisibleItemCount);
+        }else{
+        	ImageLoadUtil.getInstance().cancelAllTasks();
+        }
+    }
+
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
+                         int totalItemCount) {
+        mFirstVisibleItem = firstVisibleItem;
+        mVisibleItemCount = visibleItemCount;
+        // 下载的任务应该由onScrollStateChanged里调用，但首次进入程序时onScrollStateChanged并不会调用，
+        // 因此在这里为首次进入程序开启下载任务。
+        if (isFirstEnter && visibleItemCount > 0) {
+            loadImages(firstVisibleItem, visibleItemCount);
+            isFirstEnter = false;
+        }
+    }
+
+    public void loadImages(int start,int count){
+        for (int i = start+count-1 ; i >= start; i--) {
+            String  path = imageAdapter.getItem(i);
+            if(path!=null && !path.trim().equals("")){
+                View view = imageGridView.findViewWithTag(CheckedImageView.TAG+path);
+                if(view != null){
+                    ((CheckedImageView)view).loadImage();
+                }
+            }
+        }
+    }
 }

@@ -28,10 +28,6 @@ public class ImageLoadUtil
 	 */
 	private ExecutorService mThreadPool;
 	/**
-	 * 线程池的线程数量，默认为1
-	 */
-	private int mThreadCount = 1;
-	/**
 	 * 队列的调度方式
 	 */
 	private Type mType = Type.LIFO;
@@ -59,6 +55,10 @@ public class ImageLoadUtil
 	 * 引入一个值为1的信号量，由于线程池内部也有一个阻塞线程，防止加入任务的速度过快，使LIFO效果不明显
 	 */
 	private volatile Semaphore mPoolSemaphore;
+	/**
+	 * 线程池的线程数量，默认为1
+	 */
+	private int mThreadCount = 1;
 
 	private static ImageLoadUtil mInstance;
 
@@ -88,7 +88,7 @@ public class ImageLoadUtil
 			{
 				if (mInstance == null)
 				{
-					mInstance = new ImageLoadUtil(1, Type.LIFO);
+					mInstance = new ImageLoadUtil(3, Type.LIFO);
 				}
 			}
 		}
@@ -144,6 +144,7 @@ public class ImageLoadUtil
 		};
 
 		mThreadPool = Executors.newFixedThreadPool(threadCount);
+		mThreadCount = threadCount;
 		mPoolSemaphore = new Semaphore(threadCount);
 		mTasks = new LinkedList<Runnable>();
 		mType = type == null ? Type.LIFO : type;
@@ -249,6 +250,15 @@ public class ImageLoadUtil
 		
 		mPoolThreadHander.sendEmptyMessage(0x110);
 	}
+	
+	/**
+	 * 取消所有任务
+	 */
+	public void cancelAllTasks(){
+		mTasks.clear();
+		mPoolThreadHander.removeMessages(0x110);
+		mPoolSemaphore.release(mThreadCount);
+	}
 
 	/**
 	 * 取出一个任务
@@ -331,7 +341,7 @@ public class ImageLoadUtil
 	/**
 	 * 从LruCache中获取一张图片，如果不存在就返回null。
 	 */
-	private Bitmap getBitmapFromLruCache(String key)
+	public Bitmap getBitmapFromLruCache(String key)
 	{
 		return mLruCache.get(key);
 	}

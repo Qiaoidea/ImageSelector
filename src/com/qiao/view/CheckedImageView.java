@@ -5,6 +5,7 @@ import com.qiao.util.ImageLoadUtil;
 import com.qiao.util.Util;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -20,7 +21,7 @@ import android.widget.ImageView;
  * 2015-3-18
  */
 public class CheckedImageView extends FrameLayout {
-	final String TAG = getClass().getSimpleName();
+	public final static String TAG = "CheckedImageView:";
 	final int checkedColor = Color.parseColor("#cc0081e4");
 	
 	private ImageView imageView; //图片
@@ -61,9 +62,20 @@ public class CheckedImageView extends FrameLayout {
 		imageView.setImageResource(R.drawable.pic_default);
 		if (!Util.isNullOrWhiteSpace(path)) {
 			this.path = path;
-			ImageLoadUtil.getInstance(3,ImageLoadUtil.Type.LIFO).loadImage(path,imageView);
+			setTag(TAG + path);
+			Bitmap bm = ImageLoadUtil.getInstance().getBitmapFromLruCache(path);
+			if(bm!=null){
+				imageView.setImageBitmap(bm);
+			}
 		}
 		setChecked(isChecked);
+	}
+	
+	public void loadImage(){
+		if (!Util.isNullOrWhiteSpace(path)) {
+			this.path = path;
+			ImageLoadUtil.getInstance(3,ImageLoadUtil.Type.LIFO).loadImage(path,imageView);
+		}
 	}
 	
 	public void setChecked(boolean isChecked){

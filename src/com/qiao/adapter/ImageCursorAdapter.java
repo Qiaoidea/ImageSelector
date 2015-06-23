@@ -47,6 +47,14 @@ public class ImageCursorAdapter extends android.support.v4.widget.CursorAdapter{
 		return new CheckedImageView(context) ;
 	}
 	
+	@Override
+    public String getItem(int position) {
+        Cursor cursor =  (Cursor)super.getItem(position);
+        if(cursor!=null)
+            return cursor.getString(MediaHelper.IMAGE_PATH);
+        return null;
+    }
+	
 	public void onItemClick(CheckedImageView item, String path){
 		
 	}
