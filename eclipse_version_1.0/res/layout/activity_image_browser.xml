@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black"
+    android:orientation="vertical" >
+    
+    <LinearLayout
+        android:id="@+id/top"
+		android:background="#0072c6"
+		android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical" >
+
+        <ImageView
+            android:id="@+id/back_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+			android:src="@drawable/btn_back_selector" />
+
+        <TextView
+            android:id="@+id/head_bar_title_view"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dip"
+            android:layout_marginRight="10dip"
+            android:layout_weight="1"
+            android:ellipsize="middle"
+            android:gravity="center"
+            android:singleLine="true"
+            android:text="最近图片"
+            android:textColor="@android:color/white"
+            android:textSize="20sp" />
+
+    </LinearLayout>
+    
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"/>
+</LinearLayout>
