@@ -9,6 +9,11 @@
    <img src="https://raw.githubusercontent.com/Qiaoidea/ImageSelector/master/screenShot/device-3.png" width="350" alt="Screenshot"/>
 </p>
 
+**Todo:**
+- 使用构建者模式来配置selectorParamsContext;
+- 切换listview/gridView为 RecyclerView;
+- 变更support v4为support v7 支持 AppCompact;
+
 # 如何使用
 ## 一、使用Activity方式
 ### 导入
