@@ -5,9 +5,11 @@ import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 
-import uk.co.senab.photoview.PhotoView;
+import com.qiao.photoview.PhotoView;
+
 
 public class PageImageView extends FrameLayout{
 	private PhotoView imageView;
@@ -26,6 +28,8 @@ public class PageImageView extends FrameLayout{
 
 	private void initalize() {
 		imageView = new PhotoView(getContext());
+		imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+		imageView.enable();
 		addView(imageView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 		progressBar = new ProgressBar(getContext());
 		LayoutParams flp = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);

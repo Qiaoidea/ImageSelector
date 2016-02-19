@@ -7,7 +7,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
 import com.qiao.util.MediaHelper;
-import com.qiao.view.CheckedImageView;
+import com.qiao.view.ImageItemView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,30 +32,30 @@ public class ImageCursorAdapter extends android.support.v4.widget.CursorAdapter{
 
 	@Override
 	public void bindView(final View view, Context context, Cursor cursor) {
-		final String path = cursor.getString(MediaHelper.IMAGE_PATH);
-		((CheckedImageView)view).setView(path, selectedLsit.contains(path));
+		final String path = cursor.getString(MediaHelper.DATA_URL);
+		((ImageItemView)view).setView(path, selectedLsit.contains(path));
 		view.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				onItemClick((CheckedImageView)view,path);
+				onItemClick((ImageItemView)view,path);
 			}
 		});
 	}
 
 	@Override
 	public View newView(Context context, Cursor cursor, ViewGroup parent) {
-		return new CheckedImageView(context) ;
+		return new ImageItemView(context) ;
 	}
 	
 	@Override
     public String getItem(int position) {
         Cursor cursor =  (Cursor)super.getItem(position);
         if(cursor!=null)
-            return cursor.getString(MediaHelper.IMAGE_PATH);
+            return cursor.getString(MediaHelper.DATA_URL);
         return null;
     }
 	
-	public void onItemClick(CheckedImageView item, String path){
+	public void onItemClick(ImageItemView item, String path){
 		
 	}
 }

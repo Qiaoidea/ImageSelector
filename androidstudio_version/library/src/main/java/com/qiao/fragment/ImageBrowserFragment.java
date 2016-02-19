@@ -14,15 +14,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.qiao.imageselector.R;
 import com.qiao.util.ImageLoadUtil;
 import com.qiao.util.ImageLoadUtil.ImageLoadListener;
 import com.qiao.view.PageImageView;
 
-import uk.co.senab.photoview.PhotoView;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -113,11 +111,13 @@ public class ImageBrowserFragment extends Fragment{
 	        super.setPrimaryItem(container, position, object);
 	        if (currIndex == position && currView!=null) return;
 	        if(currView!=null){
-				PhotoView photoView = currView.getImageView();
-				if(photoView.getScale()!= 1.0F){
-					photoView.setScale(1f);
-				}
-				photoView.setRotation(0f);
+//				PhotoView photoView = currView.getImageView();
+//				if(photoView.getScale()!= 1.0F){
+//					photoView.setScale(1f);
+//				}
+//				photoView.setRotation(0f);
+//
+				currView.getImageView().enable();
 	        }
 	        currIndex = position;
 	        currView = (PageImageView)object;

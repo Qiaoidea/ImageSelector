@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if(requestCode==PICK_REQUEST_CODE){
-            SelectorParamContext params = (SelectorParamContext)data.getSerializableExtra(SelectorParamContext.TAG_SELECTOR);
+            SelectorParamContext params = (SelectorParamContext)data.getParcelableExtra(SelectorParamContext.TAG_SELECTOR);
             //你的处理逻辑
             ArrayList<String> pick = params.getSelectedFile();
             Toast.makeText(this,"pick size:"+pick.size(),Toast.LENGTH_SHORT).show();

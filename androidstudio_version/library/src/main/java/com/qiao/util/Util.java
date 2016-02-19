@@ -1,5 +1,6 @@
 package com.qiao.util;
 
+import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
@@ -67,4 +68,8 @@ public class Util {
 		}
 	}
 
+	public static int dp2px(Context context,int size){
+		final float scale = context.getResources().getDisplayMetrics().density;
+		return (int) (size * scale + 0.5f);
+	}
 }

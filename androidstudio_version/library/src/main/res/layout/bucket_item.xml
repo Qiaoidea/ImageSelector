@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="100dip" >
 
@@ -9,58 +10,47 @@
         android:gravity="center_vertical" >
 
         <FrameLayout
-            android:id="@+id/layout_left_la"
-            android:layout_width="80dip"
-            android:layout_height="80dip"
-            android:layout_centerVertical="true" >
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/bucket_border_bg"
-                android:scaleType="fitCenter" />
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:background="@drawable/bucket_border_bg">
 
             <ImageView
                 android:id="@+id/iv_album_la"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:scaleType="centerCrop"
                 android:layout_marginBottom="5dp"
-                android:layout_marginRight="5dp"
-                android:scaleType="centerCrop" />
+                android:layout_marginRight="5dp"/>
         </FrameLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dip"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
+            android:layout_weight="1"
+            android:orientation="vertical"
             android:paddingLeft="5dp" >
 
-            <LinearLayout
-                android:layout_width="0dip"
+            <TextView
+                android:id="@+id/tv_name_la"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:paddingLeft="5dp" >
+                android:textColor="@android:color/black"
+                tools:text="sss"
+                android:textSize="16dip" />
 
-                <TextView
-                    android:id="@+id/tv_name_la"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@android:color/black"
-                    android:textSize="16dip" />
-
-                <TextView
-                    android:id="@+id/tv_count_la"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="14dip" />
-            </LinearLayout>
-
-            <ImageView
-                android:layout_width="20dip"
-                android:layout_height="20dip"
-                android:src="@drawable/next_indicator" />
+            <TextView
+                android:id="@+id/tv_count_la"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="3"
+                android:textColor="#999"
+                android:textSize="14dip" />
         </LinearLayout>
+
+        <ImageView
+            android:layout_width="20dip"
+            android:layout_height="20dip"
+            android:src="@drawable/next_indicator" />
     </LinearLayout>
 
     <View
@@ -68,4 +58,5 @@
         android:layout_height="1px"
         android:layout_gravity="bottom"
         android:background="#e4e4e4" />
-</FrameLayout>
+
+</FrameLayout>

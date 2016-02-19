@@ -46,9 +46,7 @@ public abstract class BaseAdapter<T> extends android.widget.BaseAdapter {
 		if (models == null)
 			return;
 		this.dataList.clear();
-		for (T t : models) {
-			this.dataList.add(t);
-		}
+		dataList.addAll(models);
 		notifyDataSetChanged();
 	}
 }

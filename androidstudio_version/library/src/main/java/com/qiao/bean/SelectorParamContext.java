@@ -1,6 +1,8 @@
 package com.qiao.bean;
 
-import java.io.Serializable;
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.ArrayList;
 
 /**
@@ -8,7 +10,7 @@ import java.util.ArrayList;
  * @author qiao
  * 2015-3-20
  */
-public class SelectorParamContext implements Serializable{
+	public class SelectorParamContext implements Parcelable {
 	
 	protected int maxCount;//最大选图数量
 	protected boolean hasQulityMenu;//是否有图片清晰度选项
@@ -97,4 +99,36 @@ public class SelectorParamContext implements Serializable{
 	public void removeItem(String path){
 		selectedFile.remove(path);
 	}
+
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeInt(this.maxCount);
+		dest.writeByte(hasQulityMenu ? (byte) 1 : (byte) 0);
+		dest.writeByte(isHighQulity ? (byte) 1 : (byte) 0);
+		dest.writeByte(isMult ? (byte) 1 : (byte) 0);
+		dest.writeStringList(this.selectedFile);
+	}
+
+	protected SelectorParamContext(Parcel in) {
+		this.maxCount = in.readInt();
+		this.hasQulityMenu = in.readByte() != 0;
+		this.isHighQulity = in.readByte() != 0;
+		this.isMult = in.readByte() != 0;
+		this.selectedFile = in.createStringArrayList();
+	}
+
+	public static final Parcelable.Creator<SelectorParamContext> CREATOR = new Parcelable.Creator<SelectorParamContext>() {
+		public SelectorParamContext createFromParcel(Parcel source) {
+			return new SelectorParamContext(source);
+		}
+
+		public SelectorParamContext[] newArray(int size) {
+			return new SelectorParamContext[size];
+		}
+	};
 }

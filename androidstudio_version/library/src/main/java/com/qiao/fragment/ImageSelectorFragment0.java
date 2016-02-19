@@ -1,9 +1,11 @@
-package com.qiao.imageselector.old;
+package com.qiao.fragment;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -12,10 +14,12 @@ import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.qiao.activity.ContainerActivity;
 import com.qiao.adapter.BaseAdapter;
 import com.qiao.adapter.ImageCursorAdapter;
 import com.qiao.bean.Bucket;
 import com.qiao.bean.SelectorParamContext;
+import com.qiao.imageselector.R;
 import com.qiao.util.AnimUtil;
 import com.qiao.util.ImageLoadUtil;
 import com.qiao.util.MediaHelper;
@@ -27,7 +31,13 @@ import com.qiao.view.ImageItemView;
 
 import java.util.ArrayList;
 
-public class ImageSelectorActivty extends Activity  implements AbsListView.OnScrollListener{
+
+/**
+ * Created by bingosoft on 15/4/17.
+ */
+public class ImageSelectorFragment0 extends Fragment  implements AbsListView.OnScrollListener{
+	private  Activity activity; 
+
 	protected View backView; 
 	protected TextView titleView,bucketView,picQuality,browserView,okView;
 	/**
@@ -47,10 +57,21 @@ public class ImageSelectorActivty extends Activity  implements AbsListView.OnScr
 	private SelectorParamContext paramContext;//配置选项
 	
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(com.qiao.imageselector.R.layout.fragment_image_selector);
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
 		initData();
+		return rootView=inflater.inflate(R.layout.activity_image_selector0,null);
+	}
+	
+	@Override
+	public void onAttach(Activity activity) {
+		this.activity = activity;
+		super.onAttach(activity);
+	}
+	
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
 		initViews();
 		initListeners();
 	}
@@ -59,7 +80,7 @@ public class ImageSelectorActivty extends Activity  implements AbsListView.OnScr
 	 * 初始化数据
 	 */
 	private void initData() {
-		Intent intent = getIntent();
+		Intent intent = getActivity().getIntent();
 		if(intent.hasExtra("paramContext")){
 			paramContext = (SelectorParamContext) intent.getSerializableExtra("params");
 		}else{
@@ -72,17 +93,22 @@ public class ImageSelectorActivty extends Activity  implements AbsListView.OnScr
 	 * 初始化views
 	 */
 	private void initViews() {
-		backView = findViewById(com.qiao.imageselector.R.id.back_view);
-		titleView = (TextView) findViewById(com.qiao.imageselector.R.id.head_bar_title_view);
-		bucketView = (TextView)findViewById(com.qiao.imageselector.R.id.album_view);
-		browserView = (TextView)findViewById(com.qiao.imageselector.R.id.pic_browser);
-		okView = (TextView)findViewById(com.qiao.imageselector.R.id.btn_ok);
-		picQuality = (TextView) findViewById(com.qiao.imageselector.R.id.pic_quality);
-		imageGridView = (GridView)findViewById(com.qiao.imageselector.R.id.grid_image);
-		imageGridView.setEmptyView(findViewById(com.qiao.imageselector.R.id.result_llyt));
-		albumRLayout = findViewById(com.qiao.imageselector.R.id.layout_arrow);
-		albumListView = (ListView)findViewById(com.qiao.imageselector.R.id.ablum_arrow);
+		backView = findViewById(R.id.back_view);
+		titleView = (TextView) findViewById(R.id.head_bar_title_view);
+		bucketView = (TextView)findViewById(R.id.album_view);
+		browserView = (TextView)findViewById(R.id.pic_browser);
+		okView = (TextView)findViewById(R.id.btn_ok);
+		picQuality = (TextView) findViewById(R.id.pic_quality);
+		imageGridView = (GridView)findViewById(R.id.grid_image);
+		imageGridView.setEmptyView(findViewById(R.id.result_llyt));
+		albumRLayout = findViewById(R.id.layout_arrow);
+		albumListView = (ListView)findViewById(R.id.ablum_arrow);
 		Util.initListViewStyle(albumListView);
+	}
+	
+	protected View rootView;
+	protected View findViewById(int viewId) {
+		return rootView.findViewById(viewId);
 	}
 
 	/**
@@ -93,7 +119,7 @@ public class ImageSelectorActivty extends Activity  implements AbsListView.OnScr
 			
 			@Override
 			public void onClick(View v) {
-				onBackPressed();
+				getActivity().onBackPressed();
 			}
 		});
 		bucketView.setOnClickListener(new OnClickListener() {
@@ -114,7 +140,7 @@ public class ImageSelectorActivty extends Activity  implements AbsListView.OnScr
 			
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(ImageSelectorActivty.this,ImageBrowserActivity.class);
+				Intent intent = ContainerActivity.makeIntent(getActivity(), ImageBrowserFragment.class);// new Intent(getActivity(),ImageBrowserActivity.class);
 				intent.putExtra("dataList", paramContext.getSelectedFile());
 				startActivity(intent);
 			}
@@ -136,19 +162,19 @@ public class ImageSelectorActivty extends Activity  implements AbsListView.OnScr
 		new Thread(){
 			@Override
 			public void run() {
-				mCursor = MediaHelper.getImagesCursor(ImageSelectorActivty.this);
-				final ArrayList<Bucket> bucketList = MediaHelper.getBucketList(ImageSelectorActivty.this);
+				mCursor = MediaHelper.getImagesCursor(getActivity());
+				final ArrayList<Bucket> bucketList = MediaHelper.getBucketList(getActivity());
 				
-				runOnUiThread(new Runnable() {
+				activity.runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
 						bindImageGridView(mCursor);
 						bindBucketListView(bucketList);
 						if(paramContext.isMult()){
-							findViewById(com.qiao.imageselector.R.id.pic_browser_bottom).setVisibility(View.VISIBLE);
+							findViewById(R.id.pic_browser_bottom).setVisibility(View.VISIBLE);
 							refreshUi();
 						}else{
-							findViewById(com.qiao.imageselector.R.id.pic_browser_bottom).setVisibility(View.INVISIBLE);
+							findViewById(R.id.pic_browser_bottom).setVisibility(View.INVISIBLE);
 						}
 					}
 				});
@@ -161,7 +187,7 @@ public class ImageSelectorActivty extends Activity  implements AbsListView.OnScr
 			isFirstEnter = true;
 			imageAdapter.changeCursor(cursor);
 		}else{
-			imageAdapter = new ImageCursorAdapter(ImageSelectorActivty.this,cursor,paramContext.getSelectedFile()){
+			imageAdapter = new ImageCursorAdapter(getActivity(),cursor,paramContext.getSelectedFile()){
 				@Override
 				public void onItemClick(ImageItemView itemView, String path) {
 					if(!paramContext.isMult()){
@@ -190,8 +216,8 @@ public class ImageSelectorActivty extends Activity  implements AbsListView.OnScr
 //		intent.putExtra("filePath", path);
 		paramContext.addItem(path);
 		intent.putExtra(SelectorParamContext.TAG_SELECTOR, paramContext);
-		setResult(RESULT_OK,intent);
-		this.finish();
+		activity.setResult(Activity.RESULT_OK,intent);
+		activity.finish();
 	}
 	
 	/**
@@ -202,8 +228,8 @@ public class ImageSelectorActivty extends Activity  implements AbsListView.OnScr
 		Intent intent = new Intent();
 //		intent.putExtra("filePath", getPathString(paramContext.getSelectedFile()));
 		intent.putExtra(SelectorParamContext.TAG_SELECTOR, paramContext);
-		setResult(RESULT_OK,intent);
-		this.finish();
+		activity.setResult(activity.RESULT_OK,intent);
+		activity.finish();
 	}
 	
 	private String getPathString(ArrayList<String> list){
@@ -218,7 +244,7 @@ public class ImageSelectorActivty extends Activity  implements AbsListView.OnScr
 
 	private void bindBucketListView(ArrayList<Bucket> bucketList) {
 		if(bucketList==null) return;
-		albumListView.setAdapter(new BaseAdapter<Bucket>(ImageSelectorActivty.this,bucketList) {
+		albumListView.setAdapter(new BaseAdapter<Bucket>(getActivity(),bucketList) {
 			@Override
 			public View getView(final int position, View convertView, ViewGroup parent) {
 				if(convertView == null ){
@@ -257,7 +283,7 @@ public class ImageSelectorActivty extends Activity  implements AbsListView.OnScr
 	 * 选择图片质量
 	 */
 	private void choosePicQuality() {
-		final ActionSheet actionSheet = new ActionSheet(ImageSelectorActivty.this);
+		final ActionSheet actionSheet = new ActionSheet(getActivity());
 		actionSheet.show(paramContext.menuItems, new Action1<Integer>() {
 			@Override
 			public void invoke(Integer index) {
@@ -286,7 +312,7 @@ public class ImageSelectorActivty extends Activity  implements AbsListView.OnScr
 	 **/
 	private void popAlbum() {
 		albumRLayout.setVisibility(View.VISIBLE);
-		new AnimUtil(ImageSelectorActivty.this, com.qiao.imageselector.R.anim.translate_up_current).setLinearInterpolator().startAnimation(
+		new AnimUtil(getActivity(), R.anim.translate_up_current).setLinearInterpolator().startAnimation(
 				albumRLayout);
 	}
 
@@ -295,13 +321,13 @@ public class ImageSelectorActivty extends Activity  implements AbsListView.OnScr
 	 *  隐藏相册列表
 	 **/
 	private void hideAlbum() {
-		new AnimUtil(ImageSelectorActivty.this, com.qiao.imageselector.R.anim.translate_down).setLinearInterpolator().startAnimation(
+		new AnimUtil(getActivity(), R.anim.translate_down).setLinearInterpolator().startAnimation(
 				albumRLayout);
 		albumRLayout.setVisibility(View.INVISIBLE);
 	}
 	
 	@Override
-	protected void onDestroy() {
+	public void onDestroy() {
 		if(mCursor!=null)
 			mCursor.close();
 		super.onDestroy();
@@ -357,3 +383,4 @@ public class ImageSelectorActivty extends Activity  implements AbsListView.OnScr
         }
     }
 }
+

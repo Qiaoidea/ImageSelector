@@ -3,7 +3,7 @@ package com.qiao.util;
 import android.content.Context;
 import android.database.Cursor;
 import android.provider.MediaStore;
-import android.provider.MediaStore.Images.ImageColumns;
+import android.provider.MediaStore.Images.Media;
 
 import com.qiao.bean.Bucket;
 
@@ -11,99 +11,104 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Qiao
+ */
 public class MediaHelper {
-	/**
-	 * 获取图片索引
-	 */
-	public static final int IMAGE_ID = 0;
-    public static final int IMAGE_PATH = 1;
-    
+    public static final int DATA_ID = 0;
+    public static final int DATA_URL = 1;
+    public static final int DATA_ALBUM_ID = 2;
+    public static final int DATA_NAME = 3;
+
+    public static final String ALBUM_ALL = "all_album";//所有图片
+
+    private static final String[] COLUMNS_IMAGE = {
+            Media._ID,
+            Media.DATA,
+            Media.BUCKET_ID,
+            Media.BUCKET_DISPLAY_NAME,
+            Media.DATE_ADDED
+    };
+
     /**
-     * 获取相册索引
+     * 取得所有图片的游标
+     * @param context
+     * @return
      */
-    public static final int BUCKET_ID     = 0;
-	public static final int BUCKET_NAME   = 1;
-	public static final int BUCKET_URL    = 2;
-	private static final String[] PROJECTION_BUCKET = {
-		ImageColumns.BUCKET_ID,
-		ImageColumns.BUCKET_DISPLAY_NAME,
-		ImageColumns.DATA,
-		ImageColumns.SIZE};
-	
-	public static final int ALL = 999999;//所有图片
-	
-	/**
-	 * 取得所有图片的游标
-	 * @param context
-	 * @return
-	 */
-	public static Cursor getImagesCursor(Context context) {
-		return getImagesCursor(context,""+ALL);
-	}
-    
-	/**
-	 * 取得id为bucketId的相册下图片游标
-	 * @param context
-	 * @param bucketId
-	 * @return
-	 */
-    public static Cursor getImagesCursor(Context context,String bucketId){
-		Cursor imageCursor =null;
-		try {
-			
-			final String orderBy = MediaStore.Images.Media.DATE_TAKEN;
-			String searchParams = null;
-			if(!(ALL+"").equals(bucketId))
-				searchParams = "bucket_id = \"" + bucketId + "\" and _size > 1024 * 8";
-			final String[] columns = { MediaStore.Images.Media._ID , MediaStore.Images.Media.DATA, MediaStore.Images.Media.SIZE};
-			imageCursor = context.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, searchParams, null, orderBy + " DESC");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return imageCursor;
-	}
-    
+    public static Cursor getImagesCursor(Context context) {
+        return getImagesCursor(context, ALBUM_ALL);
+    }
+
+    /**
+     * 取得id为albumId的相册下图片游标
+     * @param context
+     * @param albumId
+     * @return
+     */
+    public static Cursor getImagesCursor(Context context, String albumId) {
+        Cursor imageCursor = null;
+        try {
+            //文件大小限定最小10kb
+            StringBuffer searchParams = new StringBuffer(Media.SIZE).append("> 1024*8 ");
+            //相册id
+            if (!ALBUM_ALL.equals(albumId)) {
+                searchParams.append("and ")
+                        .append(Media.BUCKET_ID).append("='").append(albumId).append("'");
+            }
+            //按时间排序
+            final String orderBy = new StringBuffer(Media.DATE_ADDED).append(" DESC").toString();
+
+            imageCursor = context.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    COLUMNS_IMAGE,searchParams.toString(), null, orderBy);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return imageCursor;
+    }
+
     /**
      * 获取相册列表
      * @param context
      * @return
      */
-    public static ArrayList<Bucket> getBucketList(Context context){
-    	ArrayList<Bucket> bucketList = new ArrayList<Bucket>();
-    	Map<Integer, Bucket> map = new HashMap<Integer, Bucket>(); 
-    	Bucket sumBucket = new Bucket(ALL, "最近照片", "");
-    	bucketList.add(sumBucket);
-    	Cursor mCursor =null;
-		try {
-			String searchParams = "_size > 1024 * 8";
-			final String orderBy = MediaStore.Images.Media.DATE_TAKEN;
-			mCursor = context.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, PROJECTION_BUCKET, searchParams, null, orderBy + " DESC");
-			while (mCursor.moveToNext()) {
-				
-				String path = mCursor.getString(BUCKET_URL);
-				int id = mCursor.getInt(BUCKET_ID);
-				if (! map.containsKey(id)) {
-					Bucket bucket = new Bucket(
-							id,
-							mCursor.getString(BUCKET_NAME),path);
-					bucket.count++;
-					bucketList.add(bucket);
-					map.put(id, bucket);
-					if(sumBucket.count == 0){
-						sumBucket.bucketUrl = bucket.bucketUrl;
-					}
-				}else{
-					map.get(id).count++;
-				}
-				sumBucket.count++;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}finally{
-			if(mCursor!=null){
-				mCursor.close();
-			}
-		}
-		return bucketList;
-	}
+    public static ArrayList<Bucket> getBucketList(Context context) {
+        return getBucketList(getImagesCursor(context));
+    }
+
+    /**
+     * 获取相册列表
+     * @param mCursor
+     * @return
+     */
+    public static ArrayList<Bucket> getBucketList(Cursor mCursor) {
+        ArrayList<Bucket> bucketList = new ArrayList<Bucket>();
+        Map<Integer, Bucket> map = new HashMap<Integer, Bucket>();
+        Bucket sumBucket = new Bucket(-1, "最近照片", "");
+        bucketList.add(sumBucket);
+        try {
+            while (mCursor.moveToNext()) {
+                String path = mCursor.getString(DATA_URL);
+                int id = mCursor.getInt(DATA_ALBUM_ID);
+                if (!map.containsKey(id)) {
+                    Bucket bucket = new Bucket(id,mCursor.getString(DATA_NAME), path);
+                    bucket.count++;
+                    bucketList.add(bucket);
+                    map.put(id, bucket);
+                    if (sumBucket.count == 0) {
+                        sumBucket.bucketUrl = bucket.bucketUrl;
+                    }
+                } else {
+                    map.get(id).count++;
+                }
+                sumBucket.count++;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (mCursor != null) {
+                mCursor.close();
+            }
+        }
+        return bucketList;
+    }
 }
