@@ -18,7 +18,6 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name="com.qiao.imageselector.old.ImageBrowserActivity"></activity>
         <activity android:name="image.selector.lib.activity.ImageSelectActivity">
             <!--<intent-filter >-->
                 <!--<action android:name="android.intent.action.MAIN"/>-->

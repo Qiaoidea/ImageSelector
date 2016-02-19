@@ -103,7 +103,6 @@ public class ImageSelectorFragment extends Fragment  implements ViewTreeObserver
 		okView = (TextView)findViewById(R.id.btn_ok);
 		picQuality = (TextView) findViewById(R.id.pic_quality);
 		recyclerView = (RecyclerView)findViewById(R.id.recyclerview);
-//		imageGridView.setEmptyView(findViewById(R.id.result_llyt));
 		recyclerView.setLayoutManager(layoutManager=new GridLayoutManager(activity,3));
 		recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
 			@Override
