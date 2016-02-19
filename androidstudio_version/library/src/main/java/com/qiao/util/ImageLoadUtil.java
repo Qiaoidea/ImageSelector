@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v4.util.LruCache;
+import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.ViewGroup.LayoutParams;
@@ -154,7 +155,7 @@ public class ImageLoadUtil {
             mHandler = new Handler() {
                 @Override
                 public void handleMessage(Message msg) {
-                    ImgBeanHolder holder = (ImgBeanHolder) msg.obj;
+                    ImageOption holder = (ImageOption) msg.obj;
                     ImageView imageView = holder.imageView;
                     Bitmap bm = holder.bitmap;
                     String path = holder.path;
@@ -170,42 +171,32 @@ public class ImageLoadUtil {
             };
         }
 
-        Bitmap bm = getBitmapFromLruCache(path);
+        final ImageOption option = new ImageOption(imageView,path,imageLoadListener);
+
+        Bitmap bm = getBitmapFromLruCache(option);
         if (bm != null) {
-            ImgBeanHolder holder = new ImgBeanHolder();
-            holder.bitmap = bm;
-            holder.imageView = imageView;
-            holder.path = path;
-            holder.imageLoadListener = imageLoadListener;
-            Message message = Message.obtain();
-            message.obj = holder;
-            mHandler.sendMessage(message);
+            option.bitmap = bm;
+            sendToTarget(option);
         } else {
             addTask(new Runnable() {
                 @Override
                 public void run() {
 
-                    ImageSize imageSize = getImageViewWidth(imageView);
-
-                    int reqWidth = imageSize.width;
-                    int reqHeight = imageSize.height;
-
-                    Bitmap bm = decodeSampledBitmapFromResource(path, reqWidth,
-                            reqHeight);
-                    addBitmapToLruCache(path, bm);
-                    ImgBeanHolder holder = new ImgBeanHolder();
-                    holder.bitmap = getBitmapFromLruCache(path);
-                    holder.imageView = imageView;
-                    holder.path = path;
-                    holder.imageLoadListener = imageLoadListener;
-                    Message message = Message.obtain();
-                    message.obj = holder;
-                    // Log.e("TAG", "mHandler.sendMessage(message);");
-                    mHandler.sendMessage(message);
+                    Bitmap bm = decodeSampledBitmapFromResource(path,
+                            option.width,option.height);
+                    addBitmapToLruCache(option, bm);
+                    option.bitmap = bm;
+                    sendToTarget(option);
                     mPoolSemaphore.release();
                 }
             });
         }
+    }
+
+    private void sendToTarget(ImageOption option){
+        Message message = Message.obtain();
+        message.obj = option;
+        mHandler.sendMessage(message);
     }
 
     /**
@@ -265,43 +256,13 @@ public class ImageLoadUtil {
         return mInstance;
     }
 
-
     /**
-     * 根据ImageView获得适当的压缩的宽和高
-     *
-     * @param imageView
-     * @return
+     * 从LruCache中获取一张图片，如果不存在就返回null。
      */
-    private ImageSize getImageViewWidth(ImageView imageView) {
-        ImageSize imageSize = new ImageSize();
-        final DisplayMetrics displayMetrics = imageView.getContext()
-                .getResources().getDisplayMetrics();
-        final LayoutParams params = imageView.getLayoutParams();
-
-        int width = params.width == LayoutParams.WRAP_CONTENT ? 0 : imageView
-                .getWidth(); // Get actual image width
-        if (width <= 0)
-            width = params.width; // Get layout width parameter
-        if (width <= 0)
-            width = getImageViewFieldValue(imageView, "mMaxWidth"); // Check
-        // maxWidth
-        // parameter
-        if (width <= 0)
-            width = displayMetrics.widthPixels;
-        int height = params.height == LayoutParams.WRAP_CONTENT ? 0 : imageView
-                .getHeight(); // Get actual image height
-        if (height <= 0)
-            height = params.height; // Get layout height parameter
-        if (height <= 0)
-            height = getImageViewFieldValue(imageView, "mMaxHeight"); // Check
-        // maxHeight
-        // parameter
-        if (height <= 0)
-            height = displayMetrics.heightPixels;
-        imageSize.width = width;
-        imageSize.height = height;
-        return imageSize;
-
+    public Bitmap getBitmapFromLruCache(ImageOption option) {
+        String key = new StringBuffer(Base64.encodeToString(option.path.getBytes(),Base64.URL_SAFE))
+                .append("_").append(option.width).append("x").append(option.height).toString();
+        return mLruCache.get(key);
     }
 
     /**
@@ -314,10 +275,12 @@ public class ImageLoadUtil {
     /**
      * 往LruCache中添加一张图片
      *
-     * @param key
+     * @param option
      * @param bitmap
      */
-    private void addBitmapToLruCache(String key, Bitmap bitmap) {
+    private void addBitmapToLruCache(ImageOption option, Bitmap bitmap) {
+        String key = new StringBuffer(Base64.encodeToString(option.path.getBytes(),Base64.URL_SAFE))
+                .append("_").append(option.width).append("x").append(option.height).toString();
         if (getBitmapFromLruCache(key) == null) {
             if (bitmap != null)
                 mLruCache.put(key, bitmap);
@@ -372,18 +335,6 @@ public class ImageLoadUtil {
         return bitmap;
     }
 
-    private class ImgBeanHolder {
-        Bitmap bitmap;
-        ImageView imageView;
-        String path;
-        ImageLoadListener imageLoadListener;
-    }
-
-    private class ImageSize {
-        int width;
-        int height;
-    }
-
     /**
      * 反射获得ImageView设置的最大宽度和高度
      *
@@ -405,6 +356,56 @@ public class ImageLoadUtil {
         } catch (Exception e) {
         }
         return value;
+    }
+
+    private class ImageOption {
+        int width;
+        int height;
+        Bitmap bitmap;
+        ImageView imageView;
+        String path;
+        ImageLoadListener imageLoadListener;
+
+        public ImageOption(ImageView imageView, String path, ImageLoadListener imageLoadListener) {
+            this.imageView = imageView;
+            this.path = path;
+            this.imageLoadListener = imageLoadListener;
+            wrap();
+        }
+
+        /**
+         * 根据ImageView获得适当的压缩的宽和高
+         *
+         * @return
+         */
+        private void wrap(){
+            final DisplayMetrics displayMetrics = imageView.getContext()
+                    .getResources().getDisplayMetrics();
+            final LayoutParams params = imageView.getLayoutParams();
+
+            int width = params.width == LayoutParams.WRAP_CONTENT ? 0 : imageView
+                    .getWidth(); // Get actual image width
+            if (width <= 0)
+                width = params.width; // Get layout width parameter
+            if (width <= 0)
+                width = getImageViewFieldValue(imageView, "mMaxWidth"); // Check
+            // maxWidth
+            // parameter
+            if (width <= 0)
+                width = displayMetrics.widthPixels;
+            int height = params.height == LayoutParams.WRAP_CONTENT ? 0 : imageView
+                    .getHeight(); // Get actual image height
+            if (height <= 0)
+                height = params.height; // Get layout height parameter
+            if (height <= 0)
+                height = getImageViewFieldValue(imageView, "mMaxHeight"); // Check
+            // maxHeight
+            // parameter
+            if (height <= 0)
+                height = displayMetrics.heightPixels;
+            this.width = width;
+            this.height = height;
+        }
     }
 
     public interface ImageLoadListener {

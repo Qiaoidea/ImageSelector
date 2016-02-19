@@ -1,12 +1,17 @@
 package com.qiao.imageselector;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
+import com.kogitune.activity_transition.ActivityTransitionLauncher;
+import com.qiao.activity.ContainerActivity;
+import com.qiao.fragment.ImageBrowserFragment;
 import com.qiao.util.ImageLoadUtil;
 
 import java.util.ArrayList;
@@ -57,26 +62,25 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageHolder>
         public ImageHolder(View itemView) {
             super(itemView);
             imageView = (ImageView) itemView;
-        }
-
-        public void setData(final String imagePath){
-
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(widget, ViewGroup.LayoutParams.WRAP_CONTENT);
             params.setMargins(3,3,3,3);
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
             imageView.setLayoutParams(params);
+        }
+
+        public void setData(final String imagePath){
             ImageLoadUtil.getInstance().loadImage(imagePath, imageView);
             imageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 //                    final Intent intent = new Intent(context, ImageBrowserActivity.class);
-//                    ArrayList<String> list = new ArrayList<String>();
-//                    list.add(imagePath);
-//                    intent.putStringArrayListExtra("dataList",list);
-//                    ActivityTransitionLauncher
-//                            .with((Activity) context)
-//                            .from(v)
-//                            .launch(intent);
+                    final Intent intent = ContainerActivity.makeIntent(context, ImageBrowserFragment.class);
+                    intent.putExtra("currIndex",images.indexOf(imagePath));
+                    intent.putStringArrayListExtra("dataList",images);
+                    ActivityTransitionLauncher
+                            .with((Activity) context)
+                            .from(v)
+                            .launch(intent);
                 }
             });
         }

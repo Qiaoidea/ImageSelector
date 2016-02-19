@@ -4,6 +4,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images.Media;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 
 import com.qiao.bean.Bucket;
 
@@ -29,6 +31,21 @@ public class MediaHelper {
             Media.BUCKET_DISPLAY_NAME,
             Media.DATE_ADDED
     };
+
+    public static Loader<Cursor> createCursor(Context context,String albumId){
+        //文件大小限定最小10kb
+        StringBuffer searchParams = new StringBuffer(Media.SIZE).append("> 1024*8 ");
+        //相册id
+        if (!ALBUM_ALL.equals(albumId)) {
+            searchParams.append("and ")
+                    .append(Media.BUCKET_ID).append("='").append(albumId).append("'");
+        }
+        //按时间排序
+        final String orderBy = new StringBuffer(Media.DATE_ADDED).append(" DESC").toString();
+        return new CursorLoader(context,
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                COLUMNS_IMAGE,searchParams.toString(), null, orderBy);
+    }
 
     /**
      * 取得所有图片的游标
@@ -104,10 +121,6 @@ public class MediaHelper {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            if (mCursor != null) {
-                mCursor.close();
-            }
         }
         return bucketList;
     }

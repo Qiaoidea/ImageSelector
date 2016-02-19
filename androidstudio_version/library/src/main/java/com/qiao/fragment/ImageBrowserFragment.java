@@ -14,6 +14,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.kogitune.activity_transition.ActivityTransition;
+import com.kogitune.activity_transition.ExitActivityTransition;
 import com.qiao.imageselector.R;
 import com.qiao.util.ImageLoadUtil;
 import com.qiao.util.ImageLoadUtil.ImageLoadListener;
@@ -28,10 +30,11 @@ import java.util.List;
  */
 public class ImageBrowserFragment extends Fragment{
 	private Activity activity;
-	private View backView;
+	private View titleView,backView;
 	private int currIndex,count;
 	private List<String> dataList;
 	private ViewPager viewPager;
+	private boolean isScale=true;
 	
 	@Override
 	public void onAttach(Activity activity) {
@@ -45,7 +48,16 @@ public class ImageBrowserFragment extends Fragment{
 		initData();
 		return rootView = inflater.inflate(R.layout.activity_image_browser,null);
 	}
-	
+
+	private ExitActivityTransition exitTransition;
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		if(isScale)
+			exitTransition = ActivityTransition.with(activity.getIntent()).to(findViewById(R.id.view_pager)).start(savedInstanceState);
+	}
+
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
@@ -56,6 +68,7 @@ public class ImageBrowserFragment extends Fragment{
 	private void initData() {
 		Intent intent = activity.getIntent();
 		currIndex = intent.getIntExtra("currIndex", 0);
+		isScale = intent.getBooleanExtra("isScale",true);
 		dataList = (List<String>) intent.getSerializableExtra("dataList");
 		if (dataList == null) {
 			dataList = new ArrayList<String>();
@@ -69,10 +82,18 @@ public class ImageBrowserFragment extends Fragment{
 	}
 
 	private void initViews() {
+		titleView = findViewById(R.id.top);
+		titleView.setVisibility(View.INVISIBLE);
 		backView = findViewById(R.id.back_view);
 		viewPager = (ViewPager)findViewById(R.id.view_pager);
 		viewPager.setAdapter(new ImagePagerAdapter());
 		viewPager.setCurrentItem(currIndex);
+		titleView.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				titleView.setVisibility(View.VISIBLE);
+			}
+		}, 500);
 	}
 
 	private void initListeners() {
@@ -80,7 +101,12 @@ public class ImageBrowserFragment extends Fragment{
 			
 			@Override
 			public void onClick(View v) {
-				activity.onBackPressed();
+				if(exitTransition!=null) {
+					titleView.setVisibility(View.INVISIBLE);
+					exitTransition.exit(activity);
+				}else{
+					activity.onBackPressed();
+				}
 			}
 		});
 	}
@@ -111,12 +137,6 @@ public class ImageBrowserFragment extends Fragment{
 	        super.setPrimaryItem(container, position, object);
 	        if (currIndex == position && currView!=null) return;
 	        if(currView!=null){
-//				PhotoView photoView = currView.getImageView();
-//				if(photoView.getScale()!= 1.0F){
-//					photoView.setScale(1f);
-//				}
-//				photoView.setRotation(0f);
-//
 				currView.getImageView().enable();
 	        }
 	        currIndex = position;

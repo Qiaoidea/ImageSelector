@@ -3,9 +3,11 @@ package com.qiao.fragment;
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Canvas;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -22,7 +24,6 @@ import com.qiao.adapter.RecyclerViewCursorAdapter;
 import com.qiao.bean.Bucket;
 import com.qiao.bean.SelectorParamContext;
 import com.qiao.imageselector.R;
-import com.qiao.util.AnimUtil;
 import com.qiao.util.ImageLoadUtil;
 import com.qiao.util.MediaHelper;
 import com.qiao.util.Util;
@@ -37,8 +38,9 @@ import java.util.ArrayList;
 /**
  * Created by bingosoft on 15/4/17.
  */
-public class ImageSelectorFragment extends Fragment  implements ViewTreeObserver.OnGlobalLayoutListener{
-	private  Activity activity; 
+public class ImageSelectorFragment extends Fragment  implements ViewTreeObserver.OnGlobalLayoutListener,
+		  OnClickListener,LoaderManager.LoaderCallbacks<Cursor>{
+	private AppCompatActivity activity;
 
 	protected View backView; 
 	protected TextView titleView,bucketView,picQuality,browserView,okView;
@@ -68,15 +70,15 @@ public class ImageSelectorFragment extends Fragment  implements ViewTreeObserver
 	
 	@Override
 	public void onAttach(Activity activity) {
-		this.activity = activity;
+		this.activity = (AppCompatActivity)activity;
 		super.onAttach(activity);
 	}
 	
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		initViews();
-		initListeners();
+		bindViews();
+		bindListeners(backView, bucketView, picQuality, browserView, okView);
 	}
 
 	/**
@@ -95,103 +97,95 @@ public class ImageSelectorFragment extends Fragment  implements ViewTreeObserver
 	/**
 	 * 初始化views
 	 */
-	private void initViews() {
+	private void bindViews() {
 		backView = findViewById(R.id.back_view);
-		titleView = (TextView) findViewById(R.id.head_bar_title_view);
-		bucketView = (TextView)findViewById(R.id.album_view);
-		browserView = (TextView)findViewById(R.id.pic_browser);
-		okView = (TextView)findViewById(R.id.btn_ok);
-		picQuality = (TextView) findViewById(R.id.pic_quality);
-		recyclerView = (RecyclerView)findViewById(R.id.recyclerview);
+		titleView = findViewById(R.id.head_bar_title_view);
+		bucketView = findViewById(R.id.album_view);
+		browserView = findViewById(R.id.pic_browser);
+		okView = findViewById(R.id.btn_ok);
+		picQuality = findViewById(R.id.pic_quality);
+		recyclerView = findViewById(R.id.recyclerview);
 		recyclerView.setLayoutManager(layoutManager=new GridLayoutManager(activity,3));
-		recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
-			@Override
-			public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
-				super.onDraw(c, parent, state);
-			}
-		});
+//		recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+//			@Override
+//			public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
+//				super.onDraw(c, parent, state);
+//			}
+//		});
 
 		albumRLayout = findViewById(R.id.layout_arrow);
-		albumListView = (ListView)findViewById(R.id.ablum_arrow);
+		albumListView = findViewById(R.id.ablum_arrow);
 		Util.initListViewStyle(albumListView);
 	}
 	
 	protected View rootView;
-	protected View findViewById(int viewId) {
-		return rootView.findViewById(viewId);
+	protected <T extends View>T findViewById(int viewId) {
+		return (T)rootView.findViewById(viewId);
 	}
 
 	/**
 	 * 绑定点击事件
 	 */
-	private void initListeners() {
-		backView.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				getActivity().onBackPressed();
-			}
-		});
-		bucketView.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				changeAlbum();
-			}
-		});
-		picQuality.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				choosePicQuality();
-			}
-		});
-		browserView.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				Intent intent = ContainerActivity.makeIntent(getActivity(), ImageBrowserFragment.class);
-				intent.putExtra("dataList", paramContext.getSelectedFile());
-				startActivity(intent);
-			}
-		});
-		okView.setOnClickListener(new OnClickListener() {
+	private void bindListeners(View... views) {
+		for(View v:views){
+			v.setOnClickListener(this);
+		}
+	}
 
-			@Override
-			public void onClick(View v) {
-				onOKClick();
+	@Override
+	public void onClick(View v) {
+		if(v==backView){ //返回
+			activity.onBackPressed();
+		}else if(v == bucketView){ //选择相册
+			if (albumRLayout.getVisibility() == View.INVISIBLE) {
+				Util.showFromBottom(albumRLayout);
+			} else {
+				Util.hideInBottom(albumRLayout);
 			}
-		});
+		}else if(v==picQuality){ //选择画质
+			choosePicQuality();
+		}else if(v== browserView){  //打开预览
+			Intent intent = ContainerActivity.makeIntent(getActivity(), ImageBrowserFragment.class);
+			intent.putExtra("dataList", paramContext.getSelectedFile());
+			intent.putExtra("isScale", false);
+			startActivity(intent);
+		}else  if(v == okView){ //确定
+			onOKClick();
+		}
 	}
 
 	/**
 	 * 取本地图片
 	 */
 	private void loadImages() {
-		new Thread(){
-			@Override
-			public void run() {
-				mCursor = MediaHelper.getImagesCursor(getActivity());
-				final ArrayList<Bucket> bucketList = MediaHelper.getBucketList(getActivity());
-				
-				activity.runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						bindImageGridView(mCursor);
-						bindBucketListView(bucketList);
-						if(paramContext.isMult()){
-							findViewById(R.id.pic_browser_bottom).setVisibility(View.VISIBLE);
-							refreshUi();
-						}else{
-							findViewById(R.id.pic_browser_bottom).setVisibility(View.INVISIBLE);
-						}
-					}
-				});
-			}
-		}.start();
+		activity.getSupportLoaderManager().initLoader(0,null,this);
 	}
-	
-	private void bindImageGridView(final Cursor cursor) {
+
+	@Override
+	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+		return MediaHelper.createCursor(activity,MediaHelper.ALBUM_ALL);
+	}
+
+	@Override
+	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+		mCursor = data;
+		ArrayList<Bucket> bucketList = MediaHelper.getBucketList(mCursor);
+		bindImageCursorData(mCursor);
+		bindBucketListView(bucketList);
+		if(paramContext.isMult()){
+			findViewById(R.id.pic_browser_bottom).setVisibility(View.VISIBLE);
+			refreshUi();
+		}else{
+			findViewById(R.id.pic_browser_bottom).setVisibility(View.INVISIBLE);
+		}
+	}
+
+	@Override
+	public void onLoaderReset(Loader<Cursor> loader) {
+		adapter.swapCursor(null);
+	}
+
+	private void bindImageCursorData(final Cursor cursor) {
 		if(adapter == null){
 			recyclerView.setAdapter(adapter = new RecyclerViewCursorAdapter() {
 						@Override
@@ -272,7 +266,7 @@ public class ImageSelectorFragment extends Fragment  implements ViewTreeObserver
 		Intent intent = new Intent();
 		paramContext.addItem(path);
 		intent.putExtra(SelectorParamContext.TAG_SELECTOR, paramContext);
-		activity.setResult(Activity.RESULT_OK,intent);
+		activity.setResult(Activity.RESULT_OK, intent);
 		activity.finish();
 	}
 	
@@ -286,27 +280,17 @@ public class ImageSelectorFragment extends Fragment  implements ViewTreeObserver
 		activity.setResult(activity.RESULT_OK,intent);
 		activity.finish();
 	}
-	
-	private String getPathString(ArrayList<String> list){
-		if(list.size()<=0)
-			return "";
-		String text = list.get(0);
-		for(int i=1;i<list.size();i++){
-			text += ","+list.get(i);
-		}
-		return text;
-	}
 
 	private void bindBucketListView(ArrayList<Bucket> bucketList) {
-		if(bucketList==null) return;
-		albumListView.setAdapter(new BaseAdapter<Bucket>(getActivity(),bucketList) {
+		if (bucketList == null) return;
+		albumListView.setAdapter(new BaseAdapter<Bucket>(getActivity(), bucketList) {
 			@Override
 			public View getView(final int position, View convertView, ViewGroup parent) {
-				if(convertView == null ){
+				if (convertView == null) {
 					convertView = new BucketView(context);
 				}
-				BucketView item = (BucketView)convertView;
-				final Bucket bucket  = (Bucket) getItem(position);
+				BucketView item = (BucketView) convertView;
+				final Bucket bucket = (Bucket) getItem(position);
 				item.setView(bucket);
 
 				item.setOnClickListener(new OnClickListener() {
@@ -315,29 +299,18 @@ public class ImageSelectorFragment extends Fragment  implements ViewTreeObserver
 						titleView.setText(bucket.bucketName);
 						if (position != 0) {
 							isExplore = true;
-							bindImageGridView(MediaHelper.getImagesCursor(context, bucket.bucketId + ""));
-						}else{
-							bindImageGridView(mCursor);
+							bindImageCursorData(MediaHelper.getImagesCursor(context, bucket.bucketId + ""));
+						} else {
+							bindImageCursorData(mCursor);
 						}
-						hideAlbum();
+						Util.hideInBottom(albumRLayout);
 					}
 				});
 				return item;
 			}
 		});
 	}
-	
-	/**
-	 * 弹出/隐藏相册列表
-	 */
-	protected void changeAlbum(){
-		if (albumRLayout.getVisibility() == View.INVISIBLE) {
-			popAlbum();
-		} else {
-			hideAlbum();
-		}
-	}
-	
+
 	/**
 	 * 选择图片质量
 	 */
@@ -347,12 +320,15 @@ public class ImageSelectorFragment extends Fragment  implements ViewTreeObserver
 			@Override
 			public void invoke(Integer index) {
 				actionSheet.hide();
-				paramContext.setHighQulity(index==1);
+				paramContext.setHighQulity(index == 1);
 				picQuality.setText(paramContext.getQuality());
 			}
 		});
 	}
-	
+
+	/**
+	 * 更新Title和选项显示
+	 */
 	private void refreshUi(){
 		okView.setText("完成("+paramContext.getPercent()+")");
 		if(paramContext.getSelectedFile().size()>0){
@@ -363,28 +339,19 @@ public class ImageSelectorFragment extends Fragment  implements ViewTreeObserver
 			browserView.setTextColor(paramContext.gcolor);
 			browserView.setEnabled(false);
 		}
-		picQuality.setVisibility(paramContext.hasQulityMenu() ?View.VISIBLE:View.INVISIBLE);
+		picQuality.setVisibility(paramContext.hasQulityMenu() ? View.VISIBLE : View.INVISIBLE);
 	}
 
-	/**
-	 *  弹出相册列表 
-	 **/
-	private void popAlbum() {
-		albumRLayout.setVisibility(View.VISIBLE);
-		new AnimUtil(getActivity(), R.anim.translate_up_current).setLinearInterpolator().startAnimation(
-				albumRLayout);
+	private String getPathString(ArrayList<String> list){
+		if(list.size()<=0)
+			return "";
+		String text = list.get(0);
+		for(int i=1;i<list.size();i++){
+			text += ","+list.get(i);
+		}
+		return text;
 	}
 
-	/**
-	 * 
-	 *  隐藏相册列表
-	 **/
-	private void hideAlbum() {
-		new AnimUtil(getActivity(), R.anim.translate_down).setLinearInterpolator().startAnimation(
-				albumRLayout);
-		albumRLayout.setVisibility(View.INVISIBLE);
-	}
-	
 	@Override
 	public void onDestroy() {
 		if(mCursor!=null)

@@ -5,6 +5,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import com.qiao.imageselector.R;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,5 +73,17 @@ public class Util {
 	public static int dp2px(Context context,int size){
 		final float scale = context.getResources().getDisplayMetrics().density;
 		return (int) (size * scale + 0.5f);
+	}
+
+	public static void showFromBottom(View view){
+		view.setVisibility(View.VISIBLE);
+		new AnimUtil(view.getContext(), R.anim.translate_up_current).setLinearInterpolator().startAnimation(
+				view);
+	}
+
+	public static void hideInBottom(View view){
+		new AnimUtil(view.getContext(), R.anim.translate_down).setLinearInterpolator().startAnimation(
+				view);
+		view.setVisibility(View.INVISIBLE);
 	}
 }
