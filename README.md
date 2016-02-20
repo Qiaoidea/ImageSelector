@@ -1,23 +1,22 @@
 # ImageSelector
  本地选图控件,支持单选、多选和预览。注：实例中提供的图片质量（这里只提供选项，并没有实际压缩操作）
  
- ``v2.0``
- !(android studio)[https://raw.githubusercontent.com/Qiaoidea/ImageSelector/master/screenShot/device-1.png]
+ ``v2.0`` **android studio**
+- 1.修改AsyncTask查询图库为 CurSorLoader;
+- 2.更改ImageView显示方式，支持缩放、旋转；
+- 3.使用AppCompact、RecyclerView替换GridView；
+- 4.变更大图打开方式，添加过渡动画；
+ ![android studio](https://raw.githubusercontent.com/Qiaoidea/ImageSelector/master/screenShot/ImageDemo.gif)
  
  ``1.0``
 
 <p>
    <img src="https://raw.githubusercontent.com/Qiaoidea/ImageSelector/master/screenShot/device-1.png" width="350" alt="Screenshot"/>
-   &nbsp;&nbsp;
+     
    <img src="https://raw.githubusercontent.com/Qiaoidea/ImageSelector/master/screenShot/device-2.png" width="350" alt="Screenshot"/>
-   &nbsp;&nbsp;
+     
    <img src="https://raw.githubusercontent.com/Qiaoidea/ImageSelector/master/screenShot/device-3.png" width="350" alt="Screenshot"/>
 </p>
-
-**Todo:**
-- 使用构建者模式来配置selectorParamsContext;
-- 切换listview/gridView为 RecyclerView;
-- 变更support v4为support v7 支持 AppCompact;
 
 # 如何使用
 ## 一、使用Activity方式
