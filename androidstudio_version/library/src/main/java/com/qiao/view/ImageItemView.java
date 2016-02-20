@@ -10,6 +10,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Xfermode;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.Checkable;
@@ -88,9 +89,10 @@ public class ImageItemView extends ImageView implements Checkable {
         if (!Util.isNullOrWhiteSpace(path)) {
             this.path = path;
             setTag(TAG + path);
-            Bitmap bm = ImageLoadUtil.getInstance().getBitmapFromLruCache(path);
+            Bitmap bm = ImageLoadUtil.getInstance().getBitmapFromLruCache(this,path);
             if(bm!=null){
                 setImageBitmap(bm);
+                Log.e("founded........","image bm"+path);
             }else{
                 setImageResource(R.drawable.pic_default);
             }

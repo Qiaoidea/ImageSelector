@@ -1,5 +1,10 @@
 # ImageSelector
  本地选图控件,支持单选、多选和预览。注：实例中提供的图片质量（这里只提供选项，并没有实际压缩操作）
+ 
+ ``v2.0``
+ !(android studio)[https://raw.githubusercontent.com/Qiaoidea/ImageSelector/master/screenShot/device-1.png]
+ 
+ ``1.0``
 
 <p>
    <img src="https://raw.githubusercontent.com/Qiaoidea/ImageSelector/master/screenShot/device-1.png" width="350" alt="Screenshot"/>

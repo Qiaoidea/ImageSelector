@@ -10,6 +10,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -42,7 +43,6 @@ public class ImageSelectorFragment extends Fragment  implements ViewTreeObserver
 		  OnClickListener,LoaderManager.LoaderCallbacks<Cursor>{
 	private AppCompatActivity activity;
 
-	protected View backView; 
 	protected TextView titleView,bucketView,picQuality,browserView,okView;
 	/**
 	 * 展示图片
@@ -78,7 +78,7 @@ public class ImageSelectorFragment extends Fragment  implements ViewTreeObserver
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		bindViews();
-		bindListeners(backView, bucketView, picQuality, browserView, okView);
+		bindListeners(bucketView, picQuality, browserView, okView);
 	}
 
 	/**
@@ -98,7 +98,7 @@ public class ImageSelectorFragment extends Fragment  implements ViewTreeObserver
 	 * 初始化views
 	 */
 	private void bindViews() {
-		backView = findViewById(R.id.back_view);
+		initToolbar();
 		titleView = findViewById(R.id.head_bar_title_view);
 		bucketView = findViewById(R.id.album_view);
 		browserView = findViewById(R.id.pic_browser);
@@ -117,6 +117,14 @@ public class ImageSelectorFragment extends Fragment  implements ViewTreeObserver
 		albumListView = findViewById(R.id.ablum_arrow);
 		Util.initListViewStyle(albumListView);
 	}
+
+	private void initToolbar(){
+		Toolbar toolbar = (Toolbar)findViewById(R.id.tool_bar);
+		activity.setSupportActionBar(toolbar);
+		toolbar.setNavigationIcon(R.drawable.btn_back_selector);
+		toolbar.setNavigationOnClickListener(this);
+		activity.getSupportActionBar().setDisplayShowTitleEnabled(false);
+	}
 	
 	protected View rootView;
 	protected <T extends View>T findViewById(int viewId) {
@@ -134,9 +142,7 @@ public class ImageSelectorFragment extends Fragment  implements ViewTreeObserver
 
 	@Override
 	public void onClick(View v) {
-		if(v==backView){ //返回
-			activity.onBackPressed();
-		}else if(v == bucketView){ //选择相册
+		if(v == bucketView){ //选择相册
 			if (albumRLayout.getVisibility() == View.INVISIBLE) {
 				Util.showFromBottom(albumRLayout);
 			} else {
@@ -151,6 +157,8 @@ public class ImageSelectorFragment extends Fragment  implements ViewTreeObserver
 			startActivity(intent);
 		}else  if(v == okView){ //确定
 			onOKClick();
+		}else{//返回
+			activity.onBackPressed();
 		}
 	}
 

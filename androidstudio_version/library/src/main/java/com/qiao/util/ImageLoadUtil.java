@@ -119,7 +119,7 @@ public class ImageLoadUtil {
 
         // 获取应用程序最大可用内存
         int maxMemory = (int) Runtime.getRuntime().maxMemory();
-        int cacheSize = maxMemory / 8;
+        int cacheSize = maxMemory / 4;
         mLruCache = new LruCache<String, Bitmap>(cacheSize) {
             @Override
             protected int sizeOf(String key, Bitmap value) {
@@ -268,7 +268,17 @@ public class ImageLoadUtil {
     /**
      * 从LruCache中获取一张图片，如果不存在就返回null。
      */
-    public Bitmap getBitmapFromLruCache(String key) {
+    private Bitmap getBitmapFromLruCache(String key) {
+        return mLruCache.get(key);
+    }
+
+    /**
+     * 从LruCache中获取一张图片，如果不存在就返回null。
+     */
+    public Bitmap getBitmapFromLruCache(ImageView imageView,String path) {
+        ImageOption option = new ImageOption(imageView,path,null);
+        String key = new StringBuffer(Base64.encodeToString(path.getBytes(),Base64.URL_SAFE))
+                .append("_").append(option.width).append("x").append(option.height).toString();
         return mLruCache.get(key);
     }
 
