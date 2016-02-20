@@ -6,6 +6,7 @@
 - 2.更改ImageView显示方式，支持缩放、旋转；
 - 3.使用AppCompact、RecyclerView替换GridView；
 - 4.变更大图打开方式，添加过渡动画；
+
  ![android studio](https://raw.githubusercontent.com/Qiaoidea/ImageSelector/master/screenShot/ImageDemo.gif)
  
  ``1.0``
